@@ -1,12 +1,16 @@
 package service
 
 import (
+	"crypto/sha512"
+	"encoding/hex"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/midtrans/midtrans-go"
 	"github.com/midtrans/midtrans-go/snap"
 	"golang-midtrans-service/helper"
 	"golang-midtrans-service/model"
+	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -20,6 +24,27 @@ func NewMidtransServiceImpl(validate *validator.Validate, client *snap.Client) *
 		Validate:   validate,
 		SnapClient: client,
 	}
+}
+
+func (service *MidtransServiceImpl) VerifySignatureKey(request model.MidtransNotification) bool {
+	err := service.Validate.Struct(request)
+
+	if err != nil {
+		helper.PanicIfError(err)
+	}
+
+	// Get all attributes
+	orderId := request.OrderId
+	statusCode := request.StatusCode
+	grossAmount := request.GrossAmount
+	serverKey := os.Getenv("MIDTRANS_SERVER_KEY")
+
+	combineSignature := orderId + statusCode + grossAmount + serverKey
+	hash := sha512.New()
+	hash.Write([]byte(combineSignature))
+	hasString := hex.EncodeToString(hash.Sum(nil))
+
+	return request.SignatureKey == hasString
 }
 
 func (service *MidtransServiceImpl) Create(c *gin.Context, request model.MidtransRequest) model.MidtransResponse {
@@ -63,4 +88,43 @@ func (service *MidtransServiceImpl) Create(c *gin.Context, request model.Midtran
 	}
 
 	return midtransResponse
+}
+
+func (service *MidtransServiceImpl) Notification(c *gin.Context, request model.MidtransNotification) model.WebResponse {
+	err := service.Validate.Struct(request)
+
+	if err != nil {
+		helper.PanicIfError(err)
+	}
+	var message string
+
+	// Check Status
+	switch request.TransactionStatus {
+	case "capture":
+		if request.FraudStatus == "accept" {
+			// Send Request to PHP (success)
+			message = "success"
+		}
+		break
+	case "settlement":
+		// Send Request to PHP (success)
+		message = "success"
+		break
+	case "cancel", "expire":
+		// Send Request to PHP (failure)
+		message = "expired"
+		break
+	case "pending":
+		// Send Request to PHP (pending)
+		message = "pending"
+		break
+	}
+
+	return model.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data: map[string]string{
+			"message": message,
+		},
+	}
 }

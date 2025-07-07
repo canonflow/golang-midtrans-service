@@ -22,7 +22,7 @@ func main() {
 	// Snap Client
 	var snapClient = snap.Client{}
 	snapClient.New(os.Getenv("MIDTRANS_SERVER_KEY"), midtrans.Sandbox)
-	//snapClient.Options.SetPaymentOverrideNotification("");
+	snapClient.Options.SetPaymentOverrideNotification(os.Getenv("MIDTRANS_CALLBACK_URL"))
 
 	// Service
 	validate := validator.New()
@@ -52,6 +52,7 @@ func main() {
 	midtransRouting := router.Group("/midtrans")
 	{
 		midtransRouting.POST("/create-snap-token", midtransController.CreateSnapToken)
+		midtransRouting.POST("/listen-notification", midtransController.ListenNotification)
 	}
 
 	err := router.Run(":" + os.Getenv("PORT"))

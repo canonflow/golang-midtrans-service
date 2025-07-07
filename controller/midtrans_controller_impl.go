@@ -31,3 +31,28 @@ func (controller *MidtransControllerImpl) CreateSnapToken(c *gin.Context) {
 
 	c.JSON(http.StatusOK, webResponse)
 }
+
+func (controller *MidtransControllerImpl) ListenNotification(c *gin.Context) {
+	var request model.MidtransNotification
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		helper.PanicIfError(err)
+	}
+
+	var webResponse model.WebResponse
+
+	// Check SignatureKey
+	if !controller.MidtransService.VerifySignatureKey(request) {
+		webResponse = model.WebResponse{
+			Code:   http.StatusUnauthorized,
+			Status: "Unauthorized",
+		}
+		c.JSON(http.StatusUnauthorized, webResponse)
+		return
+	}
+
+	// Kirim ke endpoint lain utk update status
+	webResponse = controller.MidtransService.Notification(c, request)
+
+	c.JSON(http.StatusOK, webResponse)
+}
