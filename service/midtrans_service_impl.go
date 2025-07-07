@@ -1,8 +1,10 @@
 package service
 
 import (
+	"bytes"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/midtrans/midtrans-go"
@@ -97,6 +99,8 @@ func (service *MidtransServiceImpl) Notification(c *gin.Context, request model.M
 		helper.PanicIfError(err)
 	}
 	var message string
+	paymentType := request.PaymentType
+	orderId := request.OrderId
 
 	// Check Status
 	switch request.TransactionStatus {
@@ -120,11 +124,50 @@ func (service *MidtransServiceImpl) Notification(c *gin.Context, request model.M
 		break
 	}
 
-	return model.WebResponse{
-		Code:   http.StatusOK,
-		Status: "OK",
-		Data: map[string]string{
-			"message": message,
-		},
+	// SEND TO PHP
+	requestData := map[string]string{
+		"order_id":     orderId,
+		"status":       message,
+		"payment_type": paymentType,
 	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		helper.PanicIfError(err)
+	}
+
+	// Prepare POST request
+	req, err := http.NewRequest(
+		"POST",
+		"https://ubaya.xyz/flutter/160422065/project/updatestatuspembelian.php",
+		bytes.NewBuffer(jsonData),
+	)
+	if err != nil {
+		helper.PanicIfError(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		helper.PanicIfError(err)
+	}
+	defer resp.Body.Close()
+
+	// Unmarshal into WebResponse
+	var webResp model.WebResponse
+	if err := json.NewDecoder(resp.Body).Decode(&webResp); err != nil {
+		helper.PanicIfError(err)
+	}
+
+	return webResp
+
+	//return model.WebResponse{
+	//	Code:   http.StatusOK,
+	//	Status: "OK",
+	//	Data: map[string]string{
+	//		"message": message,
+	//	},
+	//}
 }
