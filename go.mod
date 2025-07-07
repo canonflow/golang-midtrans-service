@@ -1,6 +1,6 @@
 module golang-midtrans-service
 
-go 1.23.3
+go 1.23
 
 require (
 	github.com/bytedance/sonic v1.13.3 // indirect
