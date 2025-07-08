@@ -1,0 +1,48 @@
+name: Deploying Go
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "1.23.3" # Set this to your Go version
+      - name: Build binary
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o golang-midtrans-service
+      - name: Stop service
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~/repositories/golang-midtrans-service
+            ./stop.sh
+      - name: Copy Binary File to Server
+        uses: appleboy/scp-action@v0.1.2
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "golang-midtrans-service"
+          target: "~/repositories/golang-midtrans-service"
+      - name: Restart service
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~/repositories/golang-midtrans-service
+            chmod +x golang-midtrans-service
+            ./start.sh
