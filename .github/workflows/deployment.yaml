@@ -13,14 +13,12 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: "1.23.3" # Set this to your Go version
-      - name: Build Go binary for CentOS 8 (GLIBC 2.28)
+      - name: Build Go binary (Debian with compatible GLIBC)
         uses: addnab/docker-run-action@v3
         with:
-          image: centos:8
+          image: golang:1.22-buster
           options: -v ${{ github.workspace }}:/app
           run: |
-            yum install -y epel-release
-            yum install -y golang
             cd /app
             go build -o golang-midtrans-service
       - name: Stop service
