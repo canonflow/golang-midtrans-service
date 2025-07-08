@@ -37,7 +37,8 @@ func (controller *MidtransControllerImpl) ListenNotification(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		helper.PanicIfError(err)
+		return
+		//helper.PanicIfError(err)
 	}
 
 	var webResponse model.WebResponse

@@ -95,7 +95,13 @@ func (service *MidtransServiceImpl) Notification(c *gin.Context, request model.M
 	err := service.Validate.Struct(request)
 
 	if err != nil {
-		helper.PanicIfError(err)
+		//c.JSON(http.StatusBadRequest, err.Error())
+		return model.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "Bad Request",
+			Data:   err.Error(),
+		}
+		//helper.PanicIfError(err)
 	}
 	var message string
 	paymentType := request.PaymentType
