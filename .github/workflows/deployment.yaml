@@ -20,7 +20,7 @@ jobs:
           options: -v ${{ github.workspace }}:/app
           run: |
             cd /app
-            GOOS=linux GOARCH=amd64 go build -o golang-midtrans-service
+            GOOS=linux GOARCH=amd64 go build -o golang-midtrans-service -buildvcs=false
       - name: Stop service
         uses: appleboy/ssh-action@v0.1.5
         with:
