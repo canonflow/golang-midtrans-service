@@ -13,7 +13,6 @@ import (
 	"golang-midtrans-service/model"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 type MidtransServiceImpl struct {
@@ -57,7 +56,7 @@ func (service *MidtransServiceImpl) Create(c *gin.Context, request model.Midtran
 	}
 
 	// Get OrderId
-	orderId := strconv.Itoa(request.OrderId)
+	orderId := request.OrderId
 
 	// Create Snap Request
 	req := &snap.Request{
