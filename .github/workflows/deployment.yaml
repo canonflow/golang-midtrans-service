@@ -16,7 +16,7 @@ jobs:
       - name: Build Go binary (Debian with compatible GLIBC)
         uses: addnab/docker-run-action@v3
         with:
-          image: golang:1.22-buster
+          image: golang:1.20-buster
           options: -v ${{ github.workspace }}:/app
           run: |
             cd /app
