@@ -23,7 +23,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 22
+          port: 45022
           script: |
             cd ~/repositories/golang-midtrans-service
             ./stop.sh
@@ -34,7 +34,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 22
+          port: 45022
           source: "golang-midtrans-service"
           target: "~/repositories/golang-midtrans-service"
       - name: Restart service
@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          port: 22
+          port: 45022
           script: |
             cd ~/repositories/golang-midtrans-service
             chmod +x golang-midtrans-service
