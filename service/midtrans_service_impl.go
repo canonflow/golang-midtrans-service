@@ -11,6 +11,7 @@ import (
 	"github.com/midtrans/midtrans-go/snap"
 	"golang-midtrans-service/helper"
 	"golang-midtrans-service/model"
+	"io"
 	"net/http"
 	"os"
 )
@@ -160,13 +161,28 @@ func (service *MidtransServiceImpl) Notification(c *gin.Context, request model.M
 	}
 	defer resp.Body.Close()
 
-	// Unmarshal into WebResponse
-	var webResp model.WebResponse
-	if err := json.NewDecoder(resp.Body).Decode(&webResp); err != nil {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
 		helper.PanicIfError(err)
 	}
 
+	var webResp model.WebResponse
+	if err := json.Unmarshal(body, &webResp); err != nil {
+		// fallback if PHP returned empty or invalid JSON
+		webResp = model.WebResponse{
+			Code:   resp.StatusCode,
+			Status: "Unexpected response",
+			Data:   string(body),
+		}
+	}
 	return webResp
+	// Unmarshal into WebResponse
+	//var webResp model.WebResponse
+	//if err := json.NewDecoder(resp.Body).Decode(&webResp); err != nil {
+	//	helper.PanicIfError(err)
+	//}
+	//
+	//return webResp
 
 	//return model.WebResponse{
 	//	Code:   http.StatusOK,
