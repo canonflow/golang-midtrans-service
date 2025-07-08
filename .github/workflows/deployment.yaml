@@ -33,8 +33,11 @@ jobs:
             cd ~/repositories/golang-midtrans-service
             ./stop.sh
       - name: Copy Binary File to Server
-        uses: appleboy/scp-action@v0.1.2
+        uses: appleboy/scp-action@v1
         with:
+          debug: true
+          timeout: 60
+          command_timeout: 30
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
