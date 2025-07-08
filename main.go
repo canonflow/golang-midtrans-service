@@ -30,6 +30,9 @@ func main() {
 	midtransController := controller.NewMidtransControllerImpl(midtransService)
 
 	// Router
+	if os.Getenv("ENVIRONMENT") == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	router := gin.Default()
 	router.Use(middleware.ErrorHandle())
 	router.NoRoute(func(c *gin.Context) {
