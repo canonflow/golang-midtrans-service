@@ -47,7 +47,7 @@ func main() {
 			Code:   http.StatusOK,
 			Status: "OK",
 			Data: map[string]any{
-				"Message": "Welcome to Midtrans Service by canonflow",
+				"Message": "Welcome to Midtrans Service written in Golang by canonflow",
 			},
 		})
 	})
